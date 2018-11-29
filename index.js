@@ -76,40 +76,43 @@ class Pulsatio {
 
     pulsatio(req, res) {
         let node = this.nodes[req.params.id]
-        clearTimeout(this.nodes[req.params.id].timeout)
 
         if (node) {
+            clearTimeout(node.timeout)
             this.nodes[req.params.id].lastHeartbeat = new Date()
+            this.nodes[req.params.id].timeout = setTimeout(() => {
+                this.nodes[req.params.id].online = false
+            }, node.interval * this.options.interval_timeout)
+
+            res.sendStatus(200)
         }
-
-        this.nodes[req.params.id].timeout = setTimeout(() => {
-            this.nodes[req.params.id].online = false
-        }, node.interval * this.options.interval_timeout)
-
-        res.sendStatus(200)
+        else {
+            res.sendStatus(404)
+        }
     }
 
     getNode(req, res) {
-        if(!res) {
-            return this.nodes[req]
+        if (!res) {
+            return this.clearNode(this.nodes[req])
         }
         else {
-            res.send(this.nodes[req.params.id])
+            res.send(this.clearNode(this.nodes[req.params.id]))
         }
     }
 
     getAllNodes(req, res) {
-        if(!res) {
-            return this.nodes
+        if (!res) {
+            return this.clearNode(this.nodes, true)
         }
         else {
-            res.send(this.nodes)
+            res.send(this.clearNode(this.nodes, true))
         }
     }
 
     registerNewNode(req, res) {
         let info = req.body
         info.online = true
+
         if (info.id && this.nodes[info.id]) {
             res.send({ info: 'Already registered!' })
             return
@@ -126,7 +129,7 @@ class Pulsatio {
     }
 
     deregisterNode(req, res) {
-        if(!res) {
+        if (!res) {
             this.nodes[req] = null
             delete this.nodes[req]
         }
@@ -151,7 +154,9 @@ class Pulsatio {
             }
 
             request.post(url, { json: data }, (e, r, body) => {
-                this.options.id = body.id
+                if (body) {
+                    this.options.id = body.id
+                }
                 this.startHeartbeat()
             })
         }
@@ -161,13 +166,34 @@ class Pulsatio {
         this.interval = setInterval(() => {
             let url = this.options.url + `/nodes/${this.options.id}`
             let data = {
-                ip: ip()
+                ip: ip(),
+                id: this.options.id
             }
 
             request.put(url, { json: data }, (e, r, body) => {
-                this.startHeartbeat()
+                if (r && r.statusCode !== 404) {
+                    this.startHeartbeat()
+                }
+                else {
+                    this.connect()
+                }
             })
         }, this.options.interval)
+    }
+
+    clearNode(node, multiple) {
+        if (multiple === true) {
+            let nodes = {}
+            for(let n in node) {
+                let { timeout, ...ret } = node[n];
+                nodes[n] = ret;
+            }
+            return nodes
+        }
+        else {
+            let { timeout, ...ret } = node
+            return ret
+        }
     }
 
     log(...attrs) {
