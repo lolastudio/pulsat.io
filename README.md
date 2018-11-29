@@ -1,6 +1,10 @@
 # pulsat.io
 From latin, pulsatio means heartbeat / beating / pulse
 
+```
+npm install pulsat.io
+```
+
 - server
 ```
 var Pulsatio = require('pulsat.io');
