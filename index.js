@@ -33,6 +33,8 @@ class Pulsatio {
         this.pulsatio = this.pulsatio.bind(this)
         this.getNode = this.getNode.bind(this)
         this.getAllNodes = this.getAllNodes.bind(this)
+        this.sendHeartbeat = this.sendHeartbeat.bind(this)
+        this.connect = this.connect.bind(this)
 
         this.init()
     }
@@ -143,7 +145,7 @@ class Pulsatio {
         this.connect()
     }
 
-    async connect() {
+    connect() {
         if (this.options.url) {
             let url = this.options.url + this.ENDPOINTS.register
             let data = {
@@ -157,28 +159,25 @@ class Pulsatio {
                 if (body) {
                     this.options.id = body.id
                 }
-                this.startHeartbeat()
+                this.sendHeartbeat()
             })
         }
     }
 
-    startHeartbeat() {
-        this.interval = setInterval(() => {
-            let url = this.options.url + `/nodes/${this.options.id}`
-            let data = {
-                ip: ip(),
-                id: this.options.id
-            }
+    sendHeartbeat() {
+        let url = this.options.url + `/nodes/${this.options.id}`
+        let data = {
+            ip: ip()
+        }
 
-            request.put(url, { json: data }, (e, r, body) => {
-                if (r && r.statusCode !== 404) {
-                    this.startHeartbeat()
-                }
-                else {
-                    this.connect()
-                }
-            })
-        }, this.options.interval)
+        request.put(url, { json: data }, (e, r, body) => {
+            if (r && r.statusCode !== 404) {
+                this.timeout = setTimeout(this.sendHeartbeat, this.options.interval)
+            }
+            else {
+                this.connect()
+            }
+        })
     }
 
     clearNode(node, multiple) {
