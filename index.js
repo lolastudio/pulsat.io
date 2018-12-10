@@ -81,6 +81,7 @@ class Pulsatio {
 
         if (node) {
             clearTimeout(node.timeout)
+            this.nodes[req.params.id].online = true;
             this.nodes[req.params.id].lastHeartbeat = new Date()
             this.nodes[req.params.id].timeout = setTimeout(() => {
                 this.nodes[req.params.id].online = false
@@ -156,9 +157,11 @@ class Pulsatio {
             }
 
             request.post(url, { json: data }, (e, r, body) => {
-                if (body) {
+                if (body && body.id) {
                     this.options.id = body.id
                 }
+
+                console.log(this.options);
                 this.sendHeartbeat()
             })
         }
@@ -170,7 +173,10 @@ class Pulsatio {
             ip: ip()
         }
 
+        console.log(url);
+
         request.put(url, { json: data }, (e, r, body) => {
+            console.log(body)
             if (r && r.statusCode !== 404) {
                 this.timeout = setTimeout(this.sendHeartbeat, this.options.interval)
             }
