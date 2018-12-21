@@ -33,6 +33,7 @@ var pc = new Pulsatio();
 | Option  | Type | Required | Default |
 | ------------- | ------------- | ------------- | ------------- |
 | url  | string  | Optional | 'http://localhost:4200' |
+| id  | string  | Optional | 'imx7-1' |
 | interval | integer | Optional | 30000 |
 
 ### endpoints
