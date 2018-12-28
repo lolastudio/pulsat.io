@@ -118,7 +118,10 @@ class Pulsatio {
         info.online = true
 
         if (info.id && this.nodes[info.id]) {
-            res.send({ info: 'Already registered!' })
+            res.send(this.clearNode({
+                pulsatio: { info: 'Already registered!' },
+                ...this.nodes[info.id]
+            }))
             return
         }
         if (!info.id) {
@@ -129,13 +132,13 @@ class Pulsatio {
         info.lastHeartbeat = new Date()
         this.nodes[info.id] = Object.assign({}, info)
 
-        if(this.options.on.connection) {
-            this.options.on.connection(res, () => {
-                res.send(info)
+        if (this.options.on.connection) {
+            this.options.on.connection(this.nodes[info.id], () => {
+                res.send(this.nodes[info.id])
             })
         }
         else {
-            res.send(info)
+            res.send(this.nodes[info.id])
         }
     }
 
@@ -169,6 +172,10 @@ class Pulsatio {
                     this.options.id = body.id
                 }
 
+                if (this.options.on.connection) {
+                    this.options.on.connection(body)
+                }
+
                 this.sendHeartbeat()
             })
         }
@@ -193,7 +200,7 @@ class Pulsatio {
     clearNode(node, multiple) {
         if (multiple === true) {
             let nodes = {}
-            for(let n in node) {
+            for (let n in node) {
                 let copy = Object.assign({}, node[n])
                 copy.timeout = null
                 delete copy.timeout

@@ -1,5 +1,7 @@
 'use strict';
 
+var _extends = Object.assign || function (target) { for (var i = 1; i < arguments.length; i++) { var source = arguments[i]; for (var key in source) { if (Object.prototype.hasOwnProperty.call(source, key)) { target[key] = source[key]; } } } return target; };
+
 var _createClass = function () { function defineProperties(target, props) { for (var i = 0; i < props.length; i++) { var descriptor = props[i]; descriptor.enumerable = descriptor.enumerable || false; descriptor.configurable = true; if ("value" in descriptor) descriptor.writable = true; Object.defineProperty(target, descriptor.key, descriptor); } } return function (Constructor, protoProps, staticProps) { if (protoProps) defineProperties(Constructor.prototype, protoProps); if (staticProps) defineProperties(Constructor, staticProps); return Constructor; }; }();
 
 function _objectWithoutProperties(obj, keys) { var target = {}; for (var i in obj) { if (keys.indexOf(i) >= 0) continue; if (!Object.prototype.hasOwnProperty.call(obj, i)) continue; target[i] = obj[i]; } return target; }
@@ -133,11 +135,15 @@ var Pulsatio = function () {
     }, {
         key: 'registerNewNode',
         value: function registerNewNode(req, res) {
+            var _this3 = this;
+
             var info = req.body;
             info.online = true;
 
             if (info.id && this.nodes[info.id]) {
-                res.send({ info: 'Already registered!' });
+                res.send(this.clearNode(_extends({
+                    pulsatio: { info: 'Already registered!' }
+                }, this.nodes[info.id])));
                 return;
             }
             if (!info.id) {
@@ -149,11 +155,11 @@ var Pulsatio = function () {
             this.nodes[info.id] = Object.assign({}, info);
 
             if (this.options.on.connection) {
-                this.options.on.connection(res, function () {
-                    res.send(info);
+                this.options.on.connection(this.nodes[info.id], function () {
+                    res.send(_this3.nodes[info.id]);
                 });
             } else {
-                res.send(info);
+                res.send(this.nodes[info.id]);
             }
         }
     }, {
@@ -175,7 +181,7 @@ var Pulsatio = function () {
     }, {
         key: 'connect',
         value: function connect() {
-            var _this3 = this;
+            var _this4 = this;
 
             if (this.options.url) {
                 var url = this.options.url + this.ENDPOINTS.register;
@@ -188,17 +194,21 @@ var Pulsatio = function () {
 
                 request.post(url, { json: data }, function (e, r, body) {
                     if (body && body.id) {
-                        _this3.options.id = body.id;
+                        _this4.options.id = body.id;
                     }
 
-                    _this3.sendHeartbeat();
+                    if (_this4.options.on.connection) {
+                        _this4.options.on.connection(body);
+                    }
+
+                    _this4.sendHeartbeat();
                 });
             }
         }
     }, {
         key: 'sendHeartbeat',
         value: function sendHeartbeat() {
-            var _this4 = this;
+            var _this5 = this;
 
             var url = this.options.url + ('/nodes/' + this.options.id);
             var data = {
@@ -207,9 +217,9 @@ var Pulsatio = function () {
 
             request.put(url, { json: data }, function (e, r, body) {
                 if (r && r.statusCode !== 404) {
-                    _this4.timeout = setTimeout(_this4.sendHeartbeat, _this4.options.interval);
+                    _this5.timeout = setTimeout(_this5.sendHeartbeat, _this5.options.interval);
                 } else {
-                    _this4.connect();
+                    _this5.connect();
                 }
             });
         }
