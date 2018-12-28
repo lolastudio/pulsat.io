@@ -18,24 +18,6 @@ var Pulsatio = require('pulsat.io');
 var pc = new Pulsatio();
 ```
 
-### options 
-- server
-
-| Option  | Type | Required | Default |
-| ------------- | ------------- | ------------- | ------------- |
-| port  | integer  | Optional | 4200 |
-| express | express instance  | Optional | express new instance |
-| interval_timeout | float  | Optional | 1.1 |
-
-
-- client
-
-| Option  | Type | Required | Default |
-| ------------- | ------------- | ------------- | ------------- |
-| url  | string  | Optional | 'http://localhost:4200' |
-| id  | string  | Optional | 'imx7-1' |
-| interval | integer | Optional | 30000 |
-
 ### middlewares
 - on connection (server)
 ```
@@ -62,6 +44,24 @@ new Pulsatio({
     }
 })
 ```
+
+### options 
+- server
+
+| Option  | Type | Required | Default |
+| ------------- | ------------- | ------------- | ------------- |
+| port  | integer  | Optional | 4200 |
+| express | express instance  | Optional | express new instance |
+| interval_timeout | float  | Optional | 1.1 |
+
+- client
+
+| Option  | Type | Required | Default |
+| ------------- | ------------- | ------------- | ------------- |
+| url  | string  | Optional | 'http://localhost:4200' |
+| id  | string  | Optional | 'imx7-1' |
+| interval | integer | Optional | 30000 |
+
 
 ### endpoints
 
