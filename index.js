@@ -33,10 +33,7 @@ var Pulsatio = function () {
             getAllNodes: '/nodes'
         };
 
-        if (!options.express) {
-            var express = require('express');
-            this.express = express();
-        } else {
+        if (options.express) {
             this.express = options.express;
         }
 
@@ -67,20 +64,17 @@ var Pulsatio = function () {
         value: function initServer() {
             var _this = this;
 
-            var address = void 0;
-            if (this.express.address) {
-                try {
-                    address = this.express.address();
-                } catch (err) {}
-            }
-
             var bodyParser = require('body-parser');
-            this.express.use(bodyParser.json());
-
-            if (!address) {
+            if (!this.express) {
+                var express = require('express');
+                this.express = express();
+                this.express.use(bodyParser.json());
                 this.express.listen(this.options.port, function () {
                     _this.log('Pulsat.io @ ' + _this.options.port);
                 });
+            } else {
+                this.express.use(bodyParser.json());
+                this.log('Pulsat.io started');
             }
 
             this.initServerEndpoints();
