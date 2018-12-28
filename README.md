@@ -36,6 +36,33 @@ var pc = new Pulsatio();
 | id  | string  | Optional | 'imx7-1' |
 | interval | integer | Optional | 30000 |
 
+### middlewares
+- on connection (server)
+```
+new Pulsatio({
+    mode: 'server',
+    on: {
+        connection: (info, next) => {
+            console.log('new connection')
+            info.a = 'b'
+            next()
+        }
+    }
+});
+```
+
+### listeners
+- on connection (client)
+```
+new Pulsatio({
+    on: {
+        connection: (data) => {
+            console.log(data);
+        }
+    }
+})
+```
+
 ### endpoints
 
 | Endpoint | Type |
