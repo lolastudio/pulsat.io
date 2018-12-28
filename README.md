@@ -39,7 +39,7 @@ new Pulsatio({
 new Pulsatio({
     on: {
         connection: (data) => {
-            console.log(data);
+            console.log(data)
         }
     }
 })
