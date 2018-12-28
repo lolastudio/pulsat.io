@@ -20,7 +20,8 @@ var Pulsatio = function () {
             port: 4200,
             url: 'http://localhost:4200',
             interval: 30 * 1000,
-            interval_timeout: 1.1
+            interval_timeout: 1.1,
+            on: {}
         };
 
         options = Object.assign(defaults, options);
@@ -147,7 +148,13 @@ var Pulsatio = function () {
             info.lastHeartbeat = new Date();
             this.nodes[info.id] = Object.assign({}, info);
 
-            res.send(info);
+            if (this.options.on.connection) {
+                this.options.on.connection(res, function () {
+                    res.send(info);
+                });
+            } else {
+                res.send(info);
+            }
         }
     }, {
         key: 'deregisterNode',
@@ -212,11 +219,10 @@ var Pulsatio = function () {
             if (multiple === true) {
                 var nodes = {};
                 for (var n in node) {
-                    var _node$n = node[n],
-                        timeout = _node$n.timeout,
-                        ret = _objectWithoutProperties(_node$n, ['timeout']);
-
-                    nodes[n] = ret;
+                    var copy = Object.assign({}, node[n]);
+                    copy.timeout = null;
+                    delete copy.timeout;
+                    nodes[n] = copy;
                 }
                 return nodes;
             } else {

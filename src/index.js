@@ -8,7 +8,8 @@ class Pulsatio {
             port: 4200,
             url: 'http://localhost:4200',
             interval: 30 * 1000,
-            interval_timeout: 1.1
+            interval_timeout: 1.1,
+            on: {}
         }
 
         options = Object.assign(defaults, options)
@@ -128,7 +129,14 @@ class Pulsatio {
         info.lastHeartbeat = new Date()
         this.nodes[info.id] = Object.assign({}, info)
 
-        res.send(info)
+        if(this.options.on.connection) {
+            this.options.on.connection(res, () => {
+                res.send(info)
+            })
+        }
+        else {
+            res.send(info)
+        }
     }
 
     deregisterNode(req, res) {
