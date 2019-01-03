@@ -2,6 +2,8 @@
 
 From latin, pulsatio means heartbeat / beating / pulse
 
+Simple heartbeat server and client to manage overall agents and discovery, it can also be used with your existing express instance
+
 ```
 npm install pulsat.io
 ```
