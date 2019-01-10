@@ -1,8 +1,9 @@
 <img src="https://github.com/roquef/pulsat.io/blob/master/pulsat.io.png?raw=true"></img>
 
+From latin, pulsatio means heartbeat / beating / pulse
+
 [![install size](https://packagephobia.now.sh/badge?p=pulsat.io)](https://packagephobia.now.sh/result?p=pulsat.io)
 
-From latin, pulsatio means heartbeat / beating / pulse
 
 Simple heartbeat server and client to manage overall agents and discovery, it can also be used with your existing express instance
 
