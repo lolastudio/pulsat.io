@@ -220,20 +220,28 @@ var Pulsatio = function () {
     }, {
         key: 'clearNode',
         value: function clearNode(node, multiple) {
-            if (multiple === true) {
-                var nodes = {};
-                for (var n in node) {
-                    var copy = Object.assign({}, node[n]);
-                    copy.timeout = null;
-                    delete copy.timeout;
-                    nodes[n] = copy;
-                }
-                return nodes;
-            } else {
-                var timeout = node.timeout,
-                    ret = _objectWithoutProperties(node, ['timeout']);
+            if (node) {
+                if (multiple === true) {
+                    var nodes = {};
+                    for (var n in node) {
+                        var copy = Object.assign({}, node[n]);
+                        copy.timeout = null;
+                        delete copy.timeout;
+                        nodes[n] = copy;
+                    }
+                    return nodes;
+                } else {
+                    var timeout = node.timeout,
+                        ret = _objectWithoutProperties(node, ['timeout']);
 
-                return ret;
+                    return ret;
+                }
+            } else {
+                if (multiple === true) {
+                    return {};
+                } else {
+                    return undefined;
+                }
             }
         }
     }, {

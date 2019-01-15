@@ -19,7 +19,7 @@ class Pulsatio {
             getAllNodes: '/nodes'
         }
 
-        if (options.express) {   
+        if (options.express) {
             this.express = options.express
         }
 
@@ -47,7 +47,7 @@ class Pulsatio {
 
     initServer() {
         var bodyParser = require('body-parser')
-        if(!this.express) {
+        if (!this.express) {
             var express = require('express')
             this.express = express()
             this.express.use(bodyParser.json())
@@ -192,19 +192,27 @@ class Pulsatio {
     }
 
     clearNode(node, multiple) {
-        if (multiple === true) {
-            let nodes = {}
-            for (let n in node) {
-                let copy = Object.assign({}, node[n])
-                copy.timeout = null
-                delete copy.timeout
-                nodes[n] = copy
+        if (node) {
+            if (multiple === true) {
+                let nodes = {}
+                for (let n in node) {
+                    let copy = Object.assign({}, node[n])
+                    copy.timeout = null
+                    delete copy.timeout
+                    nodes[n] = copy
+                }
+                return nodes
             }
-            return nodes
+            else {
+                let { timeout, ...ret } = node
+                return ret
+            }
         }
         else {
-            let { timeout, ...ret } = node
-            return ret
+            if (multiple === true) { return {} }
+            else {
+                return undefined
+            }
         }
     }
 
