@@ -164,13 +164,16 @@ class Pulsatio {
             request.post(url, { json: data }, (e, r, body) => {
                 if (body && body.id) {
                     this.options.id = body.id
-                }
 
-                if (this.options.on.connection) {
-                    this.options.on.connection(body)
-                }
+                    if (this.options.on.connection) {
+                        this.options.on.connection(body)
+                    }
 
-                this.sendHeartbeat()
+                    this.sendHeartbeat()
+                }
+                else {
+                    setTimeout(this.connect, this.options.interval);
+                }
             })
         }
     }
@@ -183,9 +186,12 @@ class Pulsatio {
 
         request.put(url, { json: data }, (e, r, body) => {
             if (r && r.statusCode !== 404) {
+                this.disconnected = null
+                delete this.disconnected
                 this.timeout = setTimeout(this.sendHeartbeat, this.options.interval)
             }
             else {
+                this.disconnected = true
                 this.connect()
             }
         })

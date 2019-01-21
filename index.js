@@ -189,13 +189,15 @@ var Pulsatio = function () {
                 request.post(url, { json: data }, function (e, r, body) {
                     if (body && body.id) {
                         _this4.options.id = body.id;
-                    }
 
-                    if (_this4.options.on.connection) {
-                        _this4.options.on.connection(body);
-                    }
+                        if (_this4.options.on.connection) {
+                            _this4.options.on.connection(body);
+                        }
 
-                    _this4.sendHeartbeat();
+                        _this4.sendHeartbeat();
+                    } else {
+                        setTimeout(_this4.connect, _this4.options.interval);
+                    }
                 });
             }
         }
@@ -211,8 +213,11 @@ var Pulsatio = function () {
 
             request.put(url, { json: data }, function (e, r, body) {
                 if (r && r.statusCode !== 404) {
+                    _this5.disconnected = null;
+                    delete _this5.disconnected;
                     _this5.timeout = setTimeout(_this5.sendHeartbeat, _this5.options.interval);
                 } else {
+                    _this5.disconnected = true;
                     _this5.connect();
                 }
             });
