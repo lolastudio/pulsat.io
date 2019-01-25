@@ -64,7 +64,7 @@ new Pulsatio({
 | Option  | Type | Required | Default |
 | ------------- | ------------- | ------------- | ------------- |
 | url  | string  | Optional | 'http://localhost:4200' |
-| id  | string  | Optional | 'imx7-1' |
+| id  | string  | Optional | generated uuid |
 | interval | integer | Optional | 30000 |
 
 
