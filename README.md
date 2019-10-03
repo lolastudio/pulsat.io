@@ -74,6 +74,7 @@ new Pulsatio({
 | ------------- | ------------- |
 | /nodes/:id | PUT |
 | /nodes/:id | GET |
+| /nodes/:id | POST |
 | /nodes | GET |
 | /nodes | POST |
 | /nodes/:id | DELETE |
