@@ -1,6 +1,6 @@
 {
   "name": "pulsat.io",
-  "version": "0.1.9",
+  "version": "0.2.0",
   "description": "Simple heartbeat server and client to manage overall agents and discovery",
   "main": "index.js",
   "scripts": {
@@ -13,7 +13,7 @@
   "keywords": [
     "heartbeat"
   ],
-  "author": "myTapp - Draft Beer System",
+  "author": "roquef",
   "license": "GPL-3.0",
   "bugs": {
     "url": "https://github.com/roquef/pulsat.io/issues"

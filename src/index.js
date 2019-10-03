@@ -66,6 +66,7 @@ class Pulsatio {
     initServerEndpoints() {
         this.express.put('/nodes/:id', this.pulsatio)
         this.express.get('/nodes/:id', this.getNode)
+        this.express.post('/nodes/:id', this.registerNewNode)
         this.express.get(this.ENDPOINTS.getAllNodes, this.getAllNodes)
         this.express.post(this.ENDPOINTS.register, this.registerNewNode)
         this.express.delete('/nodes/:id', this.deregisterNode)
@@ -111,12 +112,19 @@ class Pulsatio {
         let info = req.body
         info.online = true
 
+        if(req.params.id) {
+            info.id = req.params.id;
+        }
+        
         if (info.id && this.nodes[info.id]) {
-            res.send(this.clearNode({
-                pulsatio: { info: 'Already registered!' },
+            for (let i in info) {
+                this.nodes[info.id][i] = info[i];
+            }
+
+            return res.send(this.clearNode({
+                pulsatio: { info: 'Updated', updated: true },
                 ...this.nodes[info.id]
-            }))
-            return
+            }))            
         }
         if (!info.id) {
             info.id = uuidv4()
