@@ -9,7 +9,8 @@ class Pulsatio {
             url: 'http://localhost:4200',
             interval: 30 * 1000,
             interval_timeout: 1.1,
-            on: {}
+            on: {},
+            vpn: false
         }
 
         options = Object.assign(defaults, options)
@@ -164,7 +165,7 @@ class Pulsatio {
             let url = this.options.url + this.ENDPOINTS.register
             let data = {
                 id: this.options.id,
-                ip: ip(),
+                ip: ip(this.options.vpn),
                 interval: this.options.interval,
                 hostname: os.hostname()
             }
@@ -189,7 +190,7 @@ class Pulsatio {
     sendHeartbeat() {
         let url = this.options.url + `/nodes/${this.options.id}`
         let data = {
-            ip: ip()
+            ip: ip(this.options.vpn)
         }
 
         request.put(url, { json: data }, (e, r, body) => {
@@ -237,8 +238,9 @@ class Pulsatio {
     }
 }
 
-function ip() {
+function ip(prefervpn) {
     let interfaces = os.networkInterfaces()
+    let results = [];
     for (let devName in interfaces) {
         let iface = interfaces[devName]
 
@@ -246,11 +248,24 @@ function ip() {
             let alias = iface[i]
             let last_digit = alias.address.substring(alias.address.length - 2, alias.address.length)
             if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal && last_digit !== '.1') {
-                return alias.address
+                if(prefervpn) {
+                    if(devName.split('tun').length > 1) {
+                        return alias.address
+                    }
+                    else {
+                        results.push(alias.address)
+                    }
+                }
+                else {
+                    return alias.address
+                }
             }
         }
     }
 
+    if(results.length > 0) {
+        return results[0]
+    }
     return '0.0.0.0'
 }
 
