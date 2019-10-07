@@ -58,6 +58,7 @@ new Pulsatio({
 | port  | integer  | Optional | 4200 |
 | express | express instance  | Optional | express new instance |
 | interval_timeout | float  | Optional | 1.1 |
+| vpn | boolean  | Optional | false |
 
 - client
 
