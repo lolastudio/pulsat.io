@@ -5,7 +5,7 @@ From latin, pulsatio means heartbeat / beating / pulse
 [![install size](https://packagephobia.now.sh/badge?p=pulsat.io)](https://packagephobia.now.sh/result?p=pulsat.io)
 
 
-Simple heartbeat server and client to manage overall agents and discovery, it can also be used with your existing express instance
+Simple heartbeat server and client to manage overall agents and discovery, supports automatic replication of data and it can also be used with your existing express instance
 
 ```
 npm install pulsat.io
@@ -13,14 +13,14 @@ npm install pulsat.io
 
 - server
 ```
-var Pulsatio = require('pulsat.io');
-var ps = new Pulsatio({ mode: 'server' });
+const Pulsatio = require('pulsat.io');
+const ps = new Pulsatio({ mode: 'server' });
 ```
 
 - client 
 ```
-var Pulsatio = require('pulsat.io');
-var pc = new Pulsatio();
+const Pulsatio = require('pulsat.io');
+const pc = new Pulsatio();
 ```
 
 ### middlewares
@@ -29,9 +29,9 @@ var pc = new Pulsatio();
 new Pulsatio({
     mode: 'server',
     on: {
-        connection: (info, next) => {
+        connection: (node, next) => {
             console.log('new connection')
-            info.a = 'b'
+            node.a = 'b'
             next()
         }
     }
@@ -59,6 +59,8 @@ new Pulsatio({
 | express | express instance  | Optional | express new instance |
 | interval_timeout | float  | Optional | 1.1 |
 | vpn | boolean  | Optional | false |
+| replication | string | Optional | null |
+| replication_prefix | string | Optional | '' |
 
 - client
 
