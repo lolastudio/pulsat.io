@@ -224,10 +224,10 @@ class Pulsatio {
 
         if (node) {
             data.replication_prefix = node.replication_prefix || this.options.replication_prefix
-            data.id = `${data.replication_prefix}${node.id}`
+            data.id = `${data.replication_prefix || ''}${node.id}`
             url = base_url + `/nodes/${data.id}`
         }
-        
+
         request.put(url, { json: data }, (e, r, body) => {
             if (this.options.mode !== 'server') {
                 if (r && r.statusCode !== 404) {
