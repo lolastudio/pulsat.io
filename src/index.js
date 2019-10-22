@@ -148,13 +148,13 @@ class Pulsatio {
         if (this.options.on.connection) {
             this.options.on.connection(this.nodes[info.id], () => {
                 res.send(this.clearNode(this.nodes[info.id]))
+                this.replicate(this.nodes[info.id])
             })
         }
         else {
             res.send(this.clearNode(this.nodes[info.id]))
+            this.replicate(this.nodes[info.id])
         }
-
-        this.replicate(this.nodes[info.id])
     }
 
     deregisterNode(req, res) {
@@ -194,7 +194,7 @@ class Pulsatio {
             }
 
             if (node) {
-                data.replication_prefix = this.options.replication_prefix
+                data.replication_prefix = node.replication_prefix || this.options.replication_prefix
             }
 
             request.post(url, { json: data }, (e, r, body) => {
@@ -223,7 +223,7 @@ class Pulsatio {
         }
 
         if (node) {
-            data.replication_prefix = this.options.replication_prefix
+            data.replication_prefix = node.replication_prefix || this.options.replication_prefix
             data.id = `${data.replication_prefix}${node.id}`
             url = base_url + `/nodes/${data.id}`
         }

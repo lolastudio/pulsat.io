@@ -14,11 +14,10 @@ var ps = new Pulsatio({
     mode: 'server',
     express: app,
     replication: 'http://localhost:9999',
-    replication_prefix: '78-',
     on: {
         connection: (info, next) => {
+            info.replication_prefix = '78-'
             info.a = 'b'
-            console.log('new connection');
             next();
         }
     }
