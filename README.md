@@ -4,7 +4,7 @@ Simple heartbeat server and client to manage overall agents and discovery, suppo
 
 From latin, pulsatio means heartbeat / beating / pulse
 
-
+### quick-start
 - install
 ```
 npm install pulsat.io
