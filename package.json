@@ -1,6 +1,6 @@
 {
   "name": "pulsat.io",
-  "version": "0.2.1",
+  "version": "0.3.0",
   "description": "Simple heartbeat server and client to manage overall agents and discovery",
   "main": "index.js",
   "scripts": {
@@ -18,5 +18,11 @@
   "bugs": {
     "url": "https://github.com/roquef/pulsat.io/issues"
   },
-  "homepage": "https://github.com/roquef/pulsat.io#readme"
+  "homepage": "https://github.com/roquef/pulsat.io#readme",
+  "dependencies": {
+    "body-parser": "^1.19.0",
+    "express": "^4.17.1",
+    "request": "^2.88.0",
+    "uuid": "^3.3.3"
+  }
 }

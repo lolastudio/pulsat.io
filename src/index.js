@@ -10,7 +10,9 @@ class Pulsatio {
             interval: 30 * 1000,
             interval_timeout: 1.1,
             on: {},
-            vpn: false
+            vpn: false,
+            replication: null,
+            replication_prefix: undefined
         }
 
         options = Object.assign(defaults, options)
@@ -78,13 +80,14 @@ class Pulsatio {
 
         if (node) {
             clearTimeout(node.timeout)
-            this.nodes[req.params.id].online = true;
-            this.nodes[req.params.id].lastHeartbeat = new Date()
-            this.nodes[req.params.id].timeout = setTimeout(() => {
-                this.nodes[req.params.id].online = false
+            node.online = true
+            node.lastHeartbeat = new Date()
+            node.timeout = setTimeout(() => {
+                node.online = false
             }, node.interval * this.options.interval_timeout)
 
             res.sendStatus(200)
+            this.replicate(this.nodes[req.params.id], true)
         }
         else {
             res.sendStatus(404)
@@ -113,19 +116,23 @@ class Pulsatio {
         let info = req.body
         info.online = true
 
-        if(req.params.id) {
-            info.id = req.params.id;
+        if (req.params.id) {
+            info.id = req.params.id
         }
-        
+
+        if (info.replication_prefix) {
+            info.id = `${info.replication_prefix}${info.id}`
+        }
+
         if (info.id && this.nodes[info.id]) {
             for (let i in info) {
-                this.nodes[info.id][i] = info[i];
+                this.nodes[info.id][i] = info[i]
             }
 
             return res.send(this.clearNode({
                 pulsatio: { info: 'Updated', updated: true },
                 ...this.nodes[info.id]
-            }))            
+            }))
         }
         if (!info.id) {
             info.id = uuidv4()
@@ -134,15 +141,20 @@ class Pulsatio {
         info.registeredAt = new Date()
         info.lastHeartbeat = new Date()
         this.nodes[info.id] = Object.assign({}, info)
+        this.nodes[info.id].timeout = setTimeout(() => {
+            this.nodes[info.id].online = false
+        }, this.nodes[info.id].interval * this.options.interval_timeout)
 
         if (this.options.on.connection) {
             this.options.on.connection(this.nodes[info.id], () => {
-                res.send(this.nodes[info.id])
+                res.send(this.clearNode(this.nodes[info.id]))
             })
         }
         else {
-            res.send(this.nodes[info.id])
+            res.send(this.clearNode(this.nodes[info.id]))
         }
+
+        this.replicate(this.nodes[info.id])
     }
 
     deregisterNode(req, res) {
@@ -156,52 +168,77 @@ class Pulsatio {
         }
     }
 
+    replicate(node, pulsatio) {
+        if (this.options.replication) {
+            if (!pulsatio) {
+                this.connect(this.options.replication, node)
+            }
+            else {
+                this.sendHeartbeat(this.options.replication, node)
+            }
+        }
+    }
+
     initClient() {
         this.connect()
     }
 
-    connect() {
-        if (this.options.url) {
-            let url = this.options.url + this.ENDPOINTS.register
-            let data = {
+    connect(base_url = this.options.url, node) {
+        if (base_url) {
+            let url = base_url + this.ENDPOINTS.register
+            let data = node || {
                 id: this.options.id,
                 ip: ip(this.options.vpn),
                 interval: this.options.interval,
-                hostname: os.hostname()
+                hostname: os.hostname(),
+            }
+
+            if (node) {
+                data.replication_prefix = this.options.replication_prefix
             }
 
             request.post(url, { json: data }, (e, r, body) => {
                 if (body && body.id) {
-                    this.options.id = body.id
+                    if (this.options.mode !== 'server') {
+                        this.options.id = body.id
 
-                    if (this.options.on.connection) {
-                        this.options.on.connection(body)
+                        if (this.options.on.connection) {
+                            this.options.on.connection(body)
+                        }
+
+                        this.sendHeartbeat()
                     }
-
-                    this.sendHeartbeat()
                 }
                 else {
-                    setTimeout(this.connect, this.options.interval);
+                    setTimeout(this.connect, this.options.interval)
                 }
             })
         }
     }
 
-    sendHeartbeat() {
-        let url = this.options.url + `/nodes/${this.options.id}`
+    sendHeartbeat(base_url = this.options.url, node = this.options) {
+        let url = base_url + `/nodes/${node.id}`
         let data = {
             ip: ip(this.options.vpn)
         }
 
+        if (node) {
+            data.replication_prefix = this.options.replication_prefix
+            data.id = `${data.replication_prefix}${node.id}`
+            url = base_url + `/nodes/${data.id}`
+        }
+        
         request.put(url, { json: data }, (e, r, body) => {
-            if (r && r.statusCode !== 404) {
-                this.disconnected = null
-                delete this.disconnected
-                this.timeout = setTimeout(this.sendHeartbeat, this.options.interval)
-            }
-            else {
-                this.disconnected = true
-                this.connect()
+            if (this.options.mode !== 'server') {
+                if (r && r.statusCode !== 404) {
+                    this.disconnected = null
+                    delete this.disconnected
+                    this.timeout = setTimeout(this.sendHeartbeat, this.options.interval)
+                }
+                else {
+                    this.disconnected = true
+                    this.connect()
+                }
             }
         })
     }
@@ -240,7 +277,7 @@ class Pulsatio {
 
 function ip(prefervpn) {
     let interfaces = os.networkInterfaces()
-    let results = [];
+    let results = []
     for (let devName in interfaces) {
         let iface = interfaces[devName]
 
@@ -248,8 +285,8 @@ function ip(prefervpn) {
             let alias = iface[i]
             let last_digit = alias.address.substring(alias.address.length - 2, alias.address.length)
             if (alias.family === 'IPv4' && alias.address !== '127.0.0.1' && !alias.internal && last_digit !== '.1') {
-                if(prefervpn) {
-                    if(devName.split('tun').length > 1) {
+                if (prefervpn) {
+                    if (devName.split('tun').length > 1) {
                         return alias.address
                     }
                     else {
@@ -263,7 +300,7 @@ function ip(prefervpn) {
         }
     }
 
-    if(results.length > 0) {
+    if (results.length > 0) {
         return results[0]
     }
     return '0.0.0.0'
