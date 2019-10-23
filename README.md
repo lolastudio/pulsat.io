@@ -1,8 +1,8 @@
 <img src="https://github.com/roquef/pulsat.io/blob/master/pulsat.io.png?raw=true"></img>
 
-> Simple heartbeat server and client to manage overall agents and discovery, supports automatic replication of data and it can also be used with your existing express instance
-
 > From latin, pulsatio means heartbeat / beating / pulse
+
+Simple heartbeat server and client to manage overall agents and discovery, supports automatic replication of data and it can also be used with your existing express instance
 
 ### quick-start
 - install
