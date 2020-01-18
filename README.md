@@ -7,7 +7,7 @@ Simple heartbeat server and client to manage overall agents and discovery, suppo
 ### quick-start
 - install
 ```
-npm install pulsat.io
+npm i pulsat.io
 ```
 
 - server
