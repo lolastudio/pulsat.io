@@ -1,7 +1,8 @@
 var Pulsatio = require('../src/index.js');
 var pc = new Pulsatio({
-    id: 'imx7-1',
+    id: '1',
     interval: 5000,
+    url: 'http://localhost:4200',
     on: {
         connection: (data) => {
             console.log(data);

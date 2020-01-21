@@ -138,9 +138,14 @@ class Pulsatio {
             info.id = uuidv4()
         }
 
+
         info.registeredAt = new Date()
         info.lastHeartbeat = new Date()
         this.nodes[info.id] = Object.assign({}, info)
+        if (!this.nodes[info.id].interval || isNaN(this.nodes[info.id].interval)) {
+            this.nodes[info.id].interval = this.options.interval;
+        }
+
         this.nodes[info.id].timeout = setTimeout(() => {
             this.nodes[info.id].online = false
         }, this.nodes[info.id].interval * this.options.interval_timeout)
