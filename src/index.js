@@ -9,7 +9,9 @@ class Pulsatio {
             url: 'http://localhost:4200',
             interval: 30 * 1000,
             interval_timeout: 1.1,
+            redirect_update: true,
             on: {},
+            callbacks: {},
             vpn: false,
             replication: null,
             replication_prefix: undefined
@@ -26,8 +28,21 @@ class Pulsatio {
             this.express = options.express
         }
 
-        this.nodes = {}
         this.options = options
+
+        this.callback = {};
+        if (this.options.callbacks) {
+            Object.keys(this.options.callbacks).forEach((element, index, array) => {
+                this.callback[element] = this.options.callbacks[element];
+            })
+        }
+
+        if (this.callback.reload) {
+            this.nodes = this.callback.reload() || {};
+        } 
+        else {
+            this.nodes = {}
+        }
 
         this.registerNewNode = this.registerNewNode.bind(this)
         this.pulsatio = this.pulsatio.bind(this)
@@ -88,9 +103,25 @@ class Pulsatio {
 
             res.sendStatus(200)
             this.replicate(this.nodes[req.params.id], true)
+
+            if (this.callback.pulsatio) {
+                this.callback.pulsatio({ 
+                    info: 'Updated',
+                    node: {
+                        id: node.id,
+                        lastHeartbeat: node.lastHeartbeat
+                    },
+                    updated: true 
+                });
+            }
         }
         else {
-            res.sendStatus(404)
+            if (this.options.redirect_update) {
+                this.registerNewNode(req, res);
+            }
+            else {
+                res.sendStatus(404);
+            }
         }
     }
 
@@ -129,6 +160,14 @@ class Pulsatio {
                 this.nodes[info.id][i] = info[i]
             }
 
+            if (this.callback.registerNewNode) {
+                this.callback.registerNewNode({ 
+                    info: 'Updated',
+                    node: this.clearNode(this.nodes[info.id]),
+                    updated: true 
+                });
+            }            
+
             return res.send(this.clearNode({
                 pulsatio: { info: 'Updated', updated: true },
                 ...this.nodes[info.id]
@@ -160,6 +199,14 @@ class Pulsatio {
             res.send(this.clearNode(this.nodes[info.id]))
             this.replicate(this.nodes[info.id])
         }
+
+        if (this.callback.registerNewNode) {
+            this.callback.registerNewNode({ 
+                info: 'Registered',
+                node: this.clearNode(this.nodes[info.id]),
+                updated: true 
+            });
+        }
     }
 
     deregisterNode(req, res) {
@@ -170,6 +217,17 @@ class Pulsatio {
         else {
             this.nodes[req.params.id] = null
             delete this.nodes[req.params.id]
+        }
+
+        if (this.callback.deregisterNode) {
+            this.callback.deregisterNode({ 
+                info: 'Registered',
+                node: {
+                    id: node.id,
+                    lastHeartbeat: node.lastHeartbeat
+                },
+                updated: true 
+            });
         }
     }
 
