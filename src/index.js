@@ -9,7 +9,7 @@ class Pulsatio {
             url: 'http://localhost:4200',
             interval: 30 * 1000,
             interval_timeout: 1.1,
-            redirect_update: true,
+            redirect_put: true,
             on: {},
             callbacks: {},
             vpn: false,
@@ -116,7 +116,7 @@ class Pulsatio {
             }
         }
         else {
-            if (this.options.redirect_update) {
+            if (this.options.redirect_put) {
                 this.registerNewNode(req, res);
             }
             else {
