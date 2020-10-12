@@ -3,7 +3,7 @@ const uuidv4 = require('uuid/v4')
 const os = require('os')
 
 class Pulsatio {
-    constructor(options = {}, nodes = {}) {
+    constructor(options = {}) {
         let defaults = {
             port: 4200,
             url: 'http://localhost:4200',
@@ -13,7 +13,8 @@ class Pulsatio {
             vpn: false,
             replication: null,
             replication_prefix: undefined,
-            register_put: false
+            register_put: false,
+            nodes: {}
         }
 
         options = Object.assign(defaults, options)
@@ -29,8 +30,7 @@ class Pulsatio {
 
         this.options = options
 
-        // Load external saved node info
-        this.nodes = nodes;
+        this.nodes = this.options.nodes;
 
         this.registerNewNode = this.registerNewNode.bind(this)
         this.pulsatio = this.pulsatio.bind(this)

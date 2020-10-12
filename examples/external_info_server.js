@@ -21,17 +21,17 @@ var ps = new Pulsatio({
             next();
         }
     },
-}, 
-{
-    '1': {
-        ip: '192.168.0.100',
-        id: '1',
-        info: 'Externally saved node info'
-    },
-    '2': {
-        ip: '192.168.0.200',
-        id: '2',
-        info: 'Externally saved node info'
+    nodes : {
+        '1': {
+            ip: '192.168.0.100',
+            id: '1',
+            info: 'Externally saved node info'
+        },
+        '2': {
+            ip: '192.168.0.200',
+            id: '2',
+            info: 'Externally saved node info'
+        }
     }
 });
 
