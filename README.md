@@ -12,20 +12,20 @@ npm i pulsat.io
 ```
 
 - server
-```
+```js
 const Pulsatio = require('pulsat.io');
 const ps = new Pulsatio({ mode: 'server' });
 ```
 
 - client 
-```
+```js
 const Pulsatio = require('pulsat.io');
 const pc = new Pulsatio();
 ```
 
 ### middlewares
 - on connection (server)
-```
+```js
 new Pulsatio({
     mode: 'server',
     on: {
@@ -40,7 +40,7 @@ new Pulsatio({
 
 ### listeners
 - on connection (client)
-```
+```js
 new Pulsatio({
     on: {
         connection: (data) => {
