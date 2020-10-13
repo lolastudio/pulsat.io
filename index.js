@@ -12,7 +12,9 @@ class Pulsatio {
             on: {},
             vpn: false,
             replication: null,
-            replication_prefix: undefined
+            replication_prefix: undefined,
+            register_put: false,
+            nodes: {}
         }
 
         options = Object.assign(defaults, options)
@@ -26,8 +28,9 @@ class Pulsatio {
             this.express = options.express
         }
 
-        this.nodes = {}
         this.options = options
+
+        this.nodes = this.options.nodes;
 
         this.registerNewNode = this.registerNewNode.bind(this)
         this.pulsatio = this.pulsatio.bind(this)
@@ -90,7 +93,12 @@ class Pulsatio {
             this.replicate(this.nodes[req.params.id], true)
         }
         else {
-            res.sendStatus(404)
+            if (this.options.register_put === true) {
+                this.registerNewNode(req, res)
+            }
+            else {
+                res.sendStatus(404)
+            }
         }
     }
 
