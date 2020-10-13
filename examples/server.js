@@ -1,4 +1,4 @@
-var Pulsatio = require('../src/index.js');
+var Pulsatio = require('../index.js');
 var express = require('express');
 var app = express();
 

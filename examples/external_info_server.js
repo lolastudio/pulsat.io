@@ -1,4 +1,4 @@
-var Pulsatio = require('../src/index.js');
+var Pulsatio = require('../index.js');
 var express = require('express');
 var app = express();
 
@@ -13,7 +13,7 @@ app.listen(4200, function () {
 var ps = new Pulsatio({
     mode: 'server',
     express: app,
-    register_put: true,
+    always_register: true,
     on: {
         connection: (info, next) => {
             console.log('new connection');

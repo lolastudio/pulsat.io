@@ -4,7 +4,27 @@ const os = require('os')
 
 class Pulsatio {
     constructor(options = {}) {
-        let defaults = {
+        this.options = Object.assign(this.default, options)
+        this.express = this.options.express;
+        this.nodes = this.options.nodes;
+        this.registerNewNode = this.registerNewNode.bind(this)
+        this.pulsatio = this.pulsatio.bind(this)
+        this.getNode = this.getNode.bind(this)
+        this.getAllNodes = this.getAllNodes.bind(this)
+        this.sendHeartbeat = this.sendHeartbeat.bind(this)
+        this.connect = this.connect.bind(this)
+
+
+        this.options.mode === 'server' ? this.initServer() : this.connect();
+    }
+
+    get default() {
+        this.ENDPOINTS = {
+            register: '/nodes',
+            getAllNodes: '/nodes'
+        }
+
+        return {
             port: 4200,
             url: 'http://localhost:4200',
             interval: 30 * 1000,
@@ -13,69 +33,32 @@ class Pulsatio {
             vpn: false,
             replication: null,
             replication_prefix: undefined,
-            register_put: false,
+            always_register: false,
             nodes: {}
-        }
-
-        options = Object.assign(defaults, options)
-
-        this.ENDPOINTS = {
-            register: '/nodes',
-            getAllNodes: '/nodes'
-        }
-
-        if (options.express) {
-            this.express = options.express
-        }
-
-        this.options = options
-
-        this.nodes = this.options.nodes;
-
-        this.registerNewNode = this.registerNewNode.bind(this)
-        this.pulsatio = this.pulsatio.bind(this)
-        this.getNode = this.getNode.bind(this)
-        this.getAllNodes = this.getAllNodes.bind(this)
-        this.sendHeartbeat = this.sendHeartbeat.bind(this)
-        this.connect = this.connect.bind(this)
-
-        this.init()
-    }
-
-    init() {
-        if (this.options.mode === 'server') {
-            this.initServer()
-        }
-        else {
-            this.initClient()
         }
     }
 
     initServer() {
-        var bodyParser = require('body-parser')
         if (!this.express) {
             var express = require('express')
-            this.express = express()
-            this.express.use(bodyParser.json())
+            this.express = express();
             this.express.listen(this.options.port, () => {
-                this.log(`Pulsat.io @ ${this.options.port}`)
+                this.log(`Pulsat.io HTTP server started @ ${this.options.port}`)
             })
         }
-        else {
-            this.express.use(bodyParser.json())
-            this.log(`Pulsat.io started`)
-        }
+        this.log(`Pulsat.io started`);
 
         this.initServerEndpoints()
     }
 
     initServerEndpoints() {
-        this.express.put('/nodes/:id', this.pulsatio)
-        this.express.get('/nodes/:id', this.getNode)
-        this.express.post('/nodes/:id', this.registerNewNode)
-        this.express.get(this.ENDPOINTS.getAllNodes, this.getAllNodes)
-        this.express.post(this.ENDPOINTS.register, this.registerNewNode)
-        this.express.delete('/nodes/:id', this.deregisterNode)
+        var bodyParser = require('body-parser')
+        this.express.put('/nodes/:id', bodyParser.json(), this.pulsatio)
+        this.express.get('/nodes/:id', bodyParser.json(), this.getNode)
+        this.express.post('/nodes/:id', bodyParser.json(), this.registerNewNode)
+        this.express.get(this.ENDPOINTS.getAllNodes, bodyParser.json(), this.getAllNodes)
+        this.express.post(this.ENDPOINTS.register, bodyParser.json(), this.registerNewNode)
+        this.express.delete('/nodes/:id', bodyParser.json(), this.deregisterNode)
     }
 
     pulsatio(req, res) {
@@ -93,12 +76,7 @@ class Pulsatio {
             this.replicate(this.nodes[req.params.id], true)
         }
         else {
-            if (this.options.register_put === true) {
-                this.registerNewNode(req, res)
-            }
-            else {
-                res.sendStatus(404)
-            }
+            this.options.always_register === true ? this.registerNewNode(req, res) : res.sendStatus(404);
         }
     }
 
@@ -124,17 +102,22 @@ class Pulsatio {
         let info = req.body
         info.online = true
 
-        if (req.params.id) {
-            info.id = req.params.id
-        }
-
+        info.id = req.params.id ? req.params.id : info.id;
         if (info.replication_prefix) {
             info.id = `${info.replication_prefix}${info.id}`
         }
 
         if (info.id && this.nodes[info.id]) {
+            let online = this.nodes[info.id].online;
+
             for (let i in info) {
                 this.nodes[info.id][i] = info[i]
+            }
+
+            if (!online && this.options.on.connection) {
+                this.options.on.connection(this.nodes[info.id], () => {
+                    this.replicate(this.nodes[info.id])
+                });
             }
 
             return res.send(this.clearNode({
@@ -190,10 +173,6 @@ class Pulsatio {
                 this.sendHeartbeat(this.options.replication, node)
             }
         }
-    }
-
-    initClient() {
-        this.connect()
     }
 
     connect(base_url = this.options.url, node) {
