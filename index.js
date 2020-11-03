@@ -5,17 +5,18 @@ const os = require('os')
 class Pulsatio {
     constructor(options = {}) {
         this.options = Object.assign(this.default, options)
-        this.express = this.options.express;
-        this.nodes = this.options.nodes;
+        this.express = this.options.express
+        this.nodes = this.options.nodes
         this.registerNewNode = this.registerNewNode.bind(this)
         this.pulsatio = this.pulsatio.bind(this)
         this.getNode = this.getNode.bind(this)
         this.getAllNodes = this.getAllNodes.bind(this)
+        this.getAllOnlineNodes = this.getAllOnlineNodes.bind(this)
         this.sendHeartbeat = this.sendHeartbeat.bind(this)
         this.connect = this.connect.bind(this)
 
 
-        this.options.mode === 'server' ? this.initServer() : this.connect();
+        this.options.mode === 'server' ? this.initServer() : this.connect()
     }
 
     get default() {
@@ -41,24 +42,25 @@ class Pulsatio {
     initServer() {
         if (!this.express) {
             var express = require('express')
-            this.express = express();
+            this.express = express()
             this.express.listen(this.options.port, () => {
                 this.log(`Pulsat.io HTTP server started @ ${this.options.port}`)
             })
         }
-        this.log(`Pulsat.io started`);
+        this.log(`Pulsat.io started`)
 
         this.initServerEndpoints()
     }
 
     initServerEndpoints() {
         var bodyParser = require('body-parser')
+        this.express.get('/nodes/online', bodyParser.json(), this.getAllOnlineNodes)
         this.express.put('/nodes/:id', bodyParser.json(), this.pulsatio)
         this.express.get('/nodes/:id', bodyParser.json(), this.getNode)
         this.express.post('/nodes/:id', bodyParser.json(), this.registerNewNode)
+        this.express.delete('/nodes/:id', bodyParser.json(), this.deregisterNode)
         this.express.get(this.ENDPOINTS.getAllNodes, bodyParser.json(), this.getAllNodes)
         this.express.post(this.ENDPOINTS.register, bodyParser.json(), this.registerNewNode)
-        this.express.delete('/nodes/:id', bodyParser.json(), this.deregisterNode)
     }
 
     pulsatio(req, res) {
@@ -68,6 +70,7 @@ class Pulsatio {
             clearTimeout(node.timeout)
             node.online = true
             node.lastHeartbeat = new Date()
+            node.ip = req.body.ip || node.ip
             node.timeout = setTimeout(() => {
                 node.online = false
             }, node.interval * this.options.interval_timeout)
@@ -76,7 +79,7 @@ class Pulsatio {
             this.replicate(this.nodes[req.params.id], true)
         }
         else {
-            this.options.always_register === true ? this.registerNewNode(req, res) : res.sendStatus(404);
+            this.options.always_register === true ? this.registerNewNode(req, res) : res.sendStatus(404)
         }
     }
 
@@ -98,17 +101,26 @@ class Pulsatio {
         }
     }
 
+    getAllOnlineNodes(req, res) {
+        let online = {};
+        for (let n in this.nodes) {
+            if (this.nodes[n].online == true) online[n] = this.nodes[n]
+        }
+
+        !res ? this.clearNode(online, true) : res.send(this.clearNode(online, true));
+    }
+
     registerNewNode(req, res) {
         let info = req.body
         info.online = true
 
-        info.id = req.params.id ? req.params.id : info.id;
+        info.id = req.params.id ? req.params.id : info.id
         if (info.replication_prefix) {
             info.id = `${info.replication_prefix}${info.id}`
         }
 
         if (info.id && this.nodes[info.id]) {
-            let online = this.nodes[info.id].online;
+            let online = this.nodes[info.id].online
 
             for (let i in info) {
                 this.nodes[info.id][i] = info[i]
@@ -117,7 +129,7 @@ class Pulsatio {
             if (!online && this.options.on.connection) {
                 this.options.on.connection(this.nodes[info.id], () => {
                     this.replicate(this.nodes[info.id])
-                });
+                })
             }
 
             return res.send(this.clearNode({
@@ -134,7 +146,7 @@ class Pulsatio {
         info.lastHeartbeat = new Date()
         this.nodes[info.id] = Object.assign({}, info)
         if (!this.nodes[info.id].interval || isNaN(this.nodes[info.id].interval)) {
-            this.nodes[info.id].interval = this.options.interval;
+            this.nodes[info.id].interval = this.options.interval
         }
 
         this.nodes[info.id].timeout = setTimeout(() => {
