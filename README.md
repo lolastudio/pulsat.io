@@ -77,6 +77,7 @@ new Pulsatio({
 | ------------- | ------------- |
 | /nodes/:id | GET, POST, PUT, DELETE |
 | /nodes | GET, POST |
+| /nodes/online | GET |
 
 ### other clients
 - [browser client](https://github.com/roquef/pulsat.io-js)
