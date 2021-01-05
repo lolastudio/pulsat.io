@@ -1,7 +1,7 @@
 const request = require('request')
 const uuidv4 = require('uuid/v4')
 const os = require('os')
-
+const Queue = require('./queue.js');
 class Pulsatio {
     constructor(options = {}) {
         this.options = Object.assign(this.default, options)
@@ -14,7 +14,7 @@ class Pulsatio {
         this.getAllOnlineNodes = this.getAllOnlineNodes.bind(this)
         this.sendHeartbeat = this.sendHeartbeat.bind(this)
         this.connect = this.connect.bind(this)
-
+        this.queue = new Queue();
 
         this.options.mode === 'server' ? this.initServer() : this.connect()
     }
@@ -68,6 +68,8 @@ class Pulsatio {
 
         if (node) {
             clearTimeout(node.timeout)
+            let res_data;
+
             node.online = true
             node.lastHeartbeat = new Date()
             node.ip = req.body.ip || node.ip
@@ -75,7 +77,11 @@ class Pulsatio {
                 node.online = false
             }, node.interval * this.options.interval_timeout)
 
-            res.sendStatus(200)
+            this.queue.clear(node.id, req.body._message_id);
+            res_data = this.queue.get(node.id);
+            if (this.options.on.heartbeat) { this.options.on.heartbeat(node, req.body); }
+
+            res.status(200).send(res_data || undefined);
             this.replicate(this.nodes[req.params.id], true)
         }
         else {
@@ -232,8 +238,13 @@ class Pulsatio {
             url = base_url + `/nodes/${data.id}`
         }
 
+        data._message_id = this.last_message_id;
+
         request.put(url, { json: data }, (e, r, body) => {
             if (this.options.mode !== 'server') {
+                this.last_message_id = (body || {})._message_id;
+                this.options.on.heartbeat(body);
+
                 if (r && r.statusCode !== 404) {
                     this.disconnected = null
                     delete this.disconnected
