@@ -1,6 +1,6 @@
 {
   "name": "pulsat.io",
-  "version": "dev0.5.0",
+  "version": "0.5.0",
   "description": "Simple heartbeat server and client to manage overall agents and discovery",
   "main": "index.js",
   "scripts": {
