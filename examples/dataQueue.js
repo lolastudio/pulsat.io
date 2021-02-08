@@ -4,8 +4,8 @@ let pulsatio = new Pulsatio({
     mode: 'server'
 });
 
-for (let i = 0; i < 1000; i++) {
+for (let i = 0; i < 10; i++) {
     pulsatio.queue.add('1', { data: i }, () => {  // node_id, data
-        console.log('response', i);
+        console.log(new Date(), 'response', i);
     });
 }
