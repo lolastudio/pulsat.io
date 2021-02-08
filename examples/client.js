@@ -1,5 +1,5 @@
 var Pulsatio = require('../index.js');
-new Pulsatio({
+let client = new Pulsatio({
     id: '1',
     interval: 5000,
     url: 'http://localhost:4200',
@@ -9,6 +9,9 @@ new Pulsatio({
         },
         heartbeat: (info) => {
             console.log(new Date(), info.data);
+            if (info.data) {
+                client.options.interval = 1e3;
+            }
         }
     }
 });
