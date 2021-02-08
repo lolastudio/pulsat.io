@@ -41,8 +41,10 @@ class Pulsatio {
 
     initServer() {
         if (!this.express) {
+            const cors = require('cors');
             var express = require('express')
             this.express = express()
+            this.express.use(cors());
             this.express.listen(this.options.port, () => {
                 this.log(`Pulsat.io HTTP server started @ ${this.options.port}`)
             })
@@ -243,7 +245,7 @@ class Pulsatio {
         request.put(url, { json: data }, (e, r, body) => {
             if (this.options.mode !== 'server') {
                 this.last_message_id = (body || {})._message_id;
-                this.options.on.heartbeat(body);
+                if (this.options.on.heartbeat) { this.options.on.heartbeat(body); }
 
                 if (r && r.statusCode !== 404) {
                     this.disconnected = null
