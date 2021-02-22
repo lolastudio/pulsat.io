@@ -5,7 +5,8 @@ let pulsatio = new Pulsatio({
 });
 
 for (let i = 0; i < 10; i++) {
-    pulsatio.queue.add('1', { data: i }, () => {  // node_id, data
+    let mid = pulsatio.queue.add('1', { data: i }, () => {  // node_id, data
         console.log(new Date(), 'response', i);
     });
+    // console.log(pulsatio.queue.remove('1', mid));
 }

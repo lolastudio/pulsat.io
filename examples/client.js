@@ -8,8 +8,8 @@ let client = new Pulsatio({
             console.log('Connected');
         },
         heartbeat: (info) => {
-            console.log(new Date(), info.data);
-            if (info.data) {
+            console.log(new Date(), (info || {}).data);
+            if (info && info.data) {
                 client.options.interval = 1e3;
             }
         }
