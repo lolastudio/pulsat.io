@@ -81,3 +81,4 @@ new Pulsatio({
 
 ### other clients
 - [browser client](https://github.com/roquef/pulsat.io-js)
+- [pulsat.io-go](https://github.com/Weinsen/pulsat.io-go)
